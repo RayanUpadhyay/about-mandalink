@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Story of Mandalink · Rayan Upadhyay</title>
+<meta name="description" content="How Mandalink, a web app for learning Mandarin through its 214 radicals, was built twice: a Python and Streamlit first version, then a React and Spring Boot rewrite.">
+<meta property="og:title" content="The Story of Mandalink">
+<meta property="og:description" content="A web app for learning Mandarin through its 214 radicals, built twice.">
+<meta property="og:image" content="https://mandalink.rayanupadhyay.com/logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF7F2; --paper:#FFFFFF; --ink:#242424; --mid:#4A4642; --low:#7A746A; --line:#E4DDD0;
+  --red:#C23B2A; --red-soft:#FBEAE6; --teal:#147A6E; --teal-soft:#E3F2EF; --gold:#B98A2E; --gold-soft:#F7EFDC;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --serif:"Fraunces",Georgia,serif; --zh:"Noto Serif SC","Songti SC","SimSun",serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15130F; --paper:#1E1B16; --ink:#F1ECE3; --mid:#CFC7BA; --low:#9C9487; --line:#332E26;
+  --red:#F07A62; --red-soft:#3A1E18; --teal:#5CC4B4; --teal-soft:#16302C; --gold:#E0B85A; --gold-soft:#332A16;
+}}
+:root[data-theme="dark"]{
+  --bg:#15130F; --paper:#1E1B16; --ink:#F1ECE3; --mid:#CFC7BA; --low:#9C9487; --line:#332E26;
+  --red:#F07A62; --red-soft:#3A1E18; --teal:#5CC4B4; --teal-soft:#16302C; --gold:#E0B85A; --gold-soft:#332A16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) 0 max(16px,env(safe-area-inset-right))}
+.zh{font-family:var(--zh)}
+h1,h2,h3{margin:0;line-height:1.1}
+h2{font:700 clamp(30px,5vw,44px)/1.1 var(--serif);letter-spacing:-.01em;margin-bottom:10px}
+p{margin:0 0 12px}
+.kick{display:block;font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:12px}
+.lede{font-size:18px;color:var(--mid);max-width:62ch}
+section{padding:72px 0 8px;scroll-margin-top:60px}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:600 15px var(--sans);text-decoration:none;white-space:nowrap}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff}
+.btn:hover{filter:brightness(1.05)}
+a:focus-visible,.btn:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:16px;height:58px}
+.brand{display:flex;align-items:center;gap:10px;font:700 17px var(--serif);text-decoration:none}
+.brand img{width:30px;height:32px}
+.nav{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:none;font:600 14px var(--sans);color:var(--low);text-decoration:none;padding:8px 10px;border-radius:8px}
+.nav a:hover{color:var(--ink);background:var(--paper)}
+
+/* hero */
+.hero{padding:64px 0 24px;display:grid;grid-template-columns:1.25fr .75fr;gap:40px;align-items:center}
+.hero h1{font:700 clamp(46px,8vw,84px)/.98 var(--serif);letter-spacing:-.02em;margin-bottom:18px}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero .lede{font-size:19px;margin-bottom:24px}
+.ctas{display:flex;flex-wrap:wrap;gap:10px}
+.logo{justify-self:center;position:relative;width:min(300px,70vw);aspect-ratio:1;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,var(--paper) 55%,transparent 56%),conic-gradient(var(--red-soft),var(--teal-soft),var(--gold-soft),var(--red-soft))}
+.logo img{width:62%;height:auto}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:36px}
+.facts div{padding:18px 14px 18px 0;min-width:0}
+.facts div+div{padding-left:14px;border-left:1px solid var(--line)}
+.facts b{display:block;font:700 30px/1 var(--serif);margin-bottom:6px}
+.facts span{display:block;font-size:13px;line-height:1.35;color:var(--low)}
+
+/* the idea */
+.idea{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.eq{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:24px;text-align:center}
+.eq .row{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.eq .ch{font:700 clamp(54px,9vw,76px)/1 var(--zh)}
+.eq .op{font:500 34px var(--serif);color:var(--low)}
+.eq .ch.r{color:var(--red)}.eq .ch.t{color:var(--teal)}
+.eq small{display:block;font-size:13px;color:var(--low);margin-top:4px}
+.eq .cap{margin-top:16px;font-size:15px;color:var(--mid);text-align:left}
+.rads{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:28px}
+.rad{position:relative;overflow:hidden;border-radius:14px;height:104px;perspective:600px;border:0;padding:0;background:none;cursor:pointer;font:inherit;color:inherit}
+.rad .in{position:absolute;inset:0;transition:transform .5s;transform-style:preserve-3d}
+.rad.on .in{transform:rotateY(180deg)}
+.rad .f,.rad .b{position:absolute;inset:0;border-radius:14px;border:1px solid var(--line);background:var(--paper);display:grid;place-items:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding:6px}
+.rad .f span{font:700 40px/1 var(--zh)}
+.rad .b{transform:rotateY(180deg);background:var(--teal-soft);text-align:center}
+.rad .b b{display:block;font:600 15px var(--sans)}.rad .b i{display:block;font-style:normal;font-size:12.5px;color:var(--mid);line-height:1.3}
+.hint{font-size:13px;color:var(--low);margin-top:10px}
+
+/* features */
+.feat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px}
+.fc{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px}
+.fc .ic{font:700 26px/1 var(--zh);color:var(--red);display:block;margin-bottom:10px}
+.fc h3{font:600 17px/1.3 var(--sans);margin-bottom:6px}
+.fc p{font-size:14.5px;color:var(--mid);margin:0}
+
+/* built twice */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}
+.v{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:22px}
+.v .tag{display:inline-block;font:700 11px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:6px 9px;border-radius:6px;margin-bottom:12px}
+.v1 .tag{background:var(--gold-soft);color:var(--gold)}.v2 .tag{background:var(--teal-soft);color:var(--teal)}
+.v h3{font:700 24px/1.15 var(--serif);margin-bottom:8px}
+.v dl{display:grid;grid-template-columns:110px 1fr;gap:8px 12px;margin:14px 0 0;font-size:14.5px}
+.v dt{color:var(--low)}.v dd{margin:0}
+.v .repo{display:inline-block;margin-top:14px;font-weight:600;text-decoration:none;border-bottom:1.5px solid currentColor}
+.why{margin-top:26px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.why div{border-left:3px solid var(--red);padding:4px 0 4px 14px}
+.why b{display:block;font-weight:600;margin-bottom:2px}
+.why span{font-size:14.5px;color:var(--mid)}
+
+/* architecture */
+.arch{margin-top:24px;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px;overflow:hidden}
+.arch svg{display:block;width:100%;height:auto}
+.arch text{font-family:var(--sans);fill:var(--ink)}
+.arch .sub{fill:var(--low);font-size:12px}
+.arch .box{fill:var(--bg);stroke:var(--line);stroke-width:1.5}
+.arch .acc{stroke:var(--teal)}
+.arch .red{stroke:var(--red)}
+.arch .gold{stroke:var(--gold)}
+.arch .ln{stroke:var(--low);stroke-width:1.5;fill:none;marker-end:url(#arr)}
+.arch #arr path{fill:var(--low)}
+.arch .archm{display:none}
+
+/* timeline */
+.tl{list-style:none;margin:26px 0 0;padding:0;position:relative}
+.tl:before{content:"";position:absolute;left:96px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl li{display:grid;grid-template-columns:96px 1fr;gap:28px;padding:10px 0;position:relative}
+.tl li:after{content:"";position:absolute;left:91px;top:18px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--gold)}
+.tl li.v2d:after{border-color:var(--teal)}
+.tl time{font:600 13px/1.6 var(--sans);color:var(--low);padding-top:4px}
+.tl b{display:block;font-weight:600}
+.tl span{font-size:14.5px;color:var(--mid)}
+.note{font-size:13px;color:var(--low);margin-top:14px}
+
+/* end */
+.end{margin:80px 0 0;background:var(--ink);color:var(--bg);border-radius:24px;padding:36px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.end h2{color:var(--bg);margin:0}
+.end p{color:color-mix(in srgb,var(--bg) 75%,transparent);margin:6px 0 0}
+.end .btn{border-color:transparent}
+footer{padding:36px 0 calc(40px + env(safe-area-inset-bottom));font-size:14px;color:var(--low)}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+footer a{color:var(--mid)}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;gap:24px;padding-top:40px}.logo{order:-1;width:min(200px,52vw)}
+  .idea{grid-template-columns:1fr}
+  .feat{grid-template-columns:1fr 1fr}
+  .rads{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .nav{display:none}
+  section{padding-top:56px}
+  .facts{grid-template-columns:1fr 1fr}.facts div:nth-child(3){padding-left:0;border-left:0}.facts div:nth-child(n+3){border-top:1px solid var(--line)}
+  .feat,.vs,.why{grid-template-columns:1fr}
+  .v dl{grid-template-columns:90px 1fr}
+  .arch .archd{display:none}.arch .archm{display:block}
+  .tl:before{left:7px}.tl li{grid-template-columns:1fr;gap:0;padding-left:28px}.tl li:after{left:2px}
+  .end{padding:26px}
+}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <a class="brand" href="#top"><img src="logo.png" alt="" width="30" height="32">Mandalink</a>
+  <nav class="nav" aria-label="Sections"><a href="#idea">The idea</a><a href="#now">What it does</a><a href="#twice">Built twice</a><a href="#inside">Inside</a><a href="#timeline">Timeline</a></nav>
+  <a class="btn pri" href="https://mandalink.org" target="_blank" rel="noopener">Open the app ↗</a>
+</div></header>
+
+<main id="top">
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <span class="kick">The story of Mandalink</span>
+        <h1>Learn the <em>building blocks</em> of Mandarin.</h1>
+        <p class="lede">Mandalink teaches Chinese through its 214 Kangxi radicals, the small pieces that keep turning up inside characters. I built it, then rebuilt it from scratch. This is how it works, and why it was built twice.</p>
+        <div class="ctas">
+          <a class="btn pri" href="https://mandalink.org" target="_blank" rel="noopener">Try it at mandalink.org ↗</a>
+          <a class="btn" href="https://github.com/RayanUpadhyay/Mandalink2" target="_blank" rel="noopener">The code ↗</a>
+        </div>
+      </div>
+      <div class="logo"><img src="logo.png" alt="The Mandalink logo: a figure under a roof" width="301" height="320"></div>
+    </div>
+    <div class="facts">
+      <div><b>214</b><span>Kangxi radicals, each with pinyin and meaning</span></div>
+      <div><b>2</b><span>versions: Python and Streamlit, then React and Spring Boot</span></div>
+      <div><b>Free</b><span>lifetime access for every learner</span></div>
+      <div><b>Commended</b><span>TISB Principal’s Commendation</span></div>
+    </div>
+
+    <section id="idea">
+      <span class="kick">The idea</span>
+      <h2>Spot the radical, get a clue</h2>
+      <div class="idea">
+        <div>
+          <p class="lede">Most learners memorise characters one at a time. But most characters are built from a small set of parts called radicals, and the radical usually hints at what a character is about.</p>
+          <p>Learn the radicals first and an unfamiliar character stops looking like random strokes. It turns into a combination of parts you already know. I’ve studied Mandarin for seven years, and Mandalink is built around that idea.</p>
+        </div>
+        <div class="eq" aria-label="妈 is made of 女, woman, and 马, horse">
+          <div class="row">
+            <div><span class="ch r">女</span><small>nǚ · woman</small></div><span class="op">+</span>
+            <div><span class="ch t">马</span><small>mǎ · horse</small></div><span class="op">=</span>
+            <div><span class="ch">妈</span><small>mā · mum</small></div>
+          </div>
+          <p class="cap">妈 (mum) takes its meaning from <b>女</b>, the woman radical, and its sound from <b>马</b> (mǎ). Neither part is random.</p>
+        </div>
+      </div>
+      <div class="rads" id="rads"></div>
+      <p class="hint">Tap a radical to flip it. These twelve come from Mandalink’s own list of all 214.</p>
+    </section>
+
+    <section id="now">
+      <span class="kick">What it does now</span>
+      <h2>Everything at mandalink.org</h2>
+      <p class="lede">The current version, Mandalink2, is a full learning app with accounts, progress and a community.</p>
+      <div class="feat">
+        <div class="fc"><span class="ic">部</span><h3>All 214 radicals</h3><p>Browse and search them with pinyin and meaning, plus a radical of the day.</p></div>
+        <div class="fc"><span class="ic">卡</span><h3>Flashcards, quizzes and timed mode</h3><p>Three ways to drill the radicals, from flipping cards to racing the clock.</p></div>
+        <div class="fc"><span class="ic">笔</span><h3>Stroke order</h3><p>Animated, interactive stroke practice powered by Hanzi Writer.</p></div>
+        <div class="fc"><span class="ic">问</span><h3>AI radical tutor</h3><p>Ask questions about radicals and get answers from a model running on the Groq API.</p></div>
+        <div class="fc"><span class="ic">写</span><h3>Printable worksheets</h3><p>Pick radicals and how many practice boxes each one gets, then print a writing sheet.</p></div>
+        <div class="fc"><span class="ic">课</span><h3>IB Chinese and study tracks</h3><p>A course section following the IB Chinese B themes and units (Unit 1, 生活方式 Lifestyle, so far), and General, IB and IGCSE study tracks saved to your account.</p></div>
+        <div class="fc"><span class="ic">榜</span><h3>XP, levels and a leaderboard</h3><p>Every answer earns XP, and other learners’ profiles are a click away.</p></div>
+        <div class="fc"><span class="ic">章</span><h3>Achievements and badges</h3><p>Featured badges, timed badge drops, quest badges and a Hall of Fame.</p></div>
+        <div class="fc"><span class="ic">告</span><h3>Announcement board</h3><p>News posted from the admin dashboard, which can be embedded on other sites. It powers the news on rayanupadhyay.com.</p></div>
+      </div>
+    </section>
+
+    <section id="twice">
+      <span class="kick">Built twice</span>
+      <h2>Why I threw the first version away</h2>
+      <p class="lede">The first Mandalink worked. But it was built in a way that made every new feature harder than the last, so instead of patching it I started again.</p>
+      <div class="vs">
+        <div class="v v1"><span class="tag">Version 1</span><h3>One Python app</h3>
+          <p>A single Streamlit app: learn, flashcards, a guess-the-meaning game, timed mode, stroke order, AI help and pronunciation, with accounts, XP and a leaderboard.</p>
+          <dl><dt>Interface</dt><dd>Streamlit</dd><dt>Data</dt><dd>pandas, a CSV of radicals; users in PostgreSQL (after CSV, then SQLite)</dd><dt>AI help</dt><dd>Groq, Llama 3.3 70B</dd><dt>Audio</dt><dd>Edge text-to-speech, cached</dd><dt>Hosting</dt><dd>Render</dd></dl>
+          <a class="repo" href="https://github.com/RayanUpadhyay/MyChineseApp" target="_blank" rel="noopener">MyChineseApp on GitHub ↗</a></div>
+        <div class="v v2"><span class="tag">Version 2 · live</span><h3>A front end and an API</h3>
+          <p>A React app talking to a Java REST API, with real pages, proper sign-in and room to grow. It runs at mandalink.org.</p>
+          <dl><dt>Front end</dt><dd>React 18, Vite, React Router, Hanzi Writer</dd><dt>Back end</dt><dd>Java 17, Spring Boot 3.3, JWT sign-in</dd><dt>Database</dt><dd>PostgreSQL</dd><dt>AI help</dt><dd>Groq</dd><dt>Hosting</dt><dd>Render (Docker, a static site and Postgres)</dd></dl>
+          <a class="repo" href="https://github.com/RayanUpadhyay/Mandalink2" target="_blank" rel="noopener">Mandalink2 on GitHub ↗</a></div>
+      </div>
+      <div class="why">
+        <div><b>Every click reran everything</b><span>Streamlit runs the whole script from the top on each button press. With the app in one file of about 1,400 lines, that made it slow and fragile.</span></div>
+        <div><b>No real pages</b><span>Navigation was sidebar buttons flipping a value in memory, so you couldn’t link to a page, go back, or bookmark anything.</span></div>
+        <div><b>Fighting the framework for design</b><span>The look came from big blocks of injected CSS and raw HTML, with images embedded as base64.</span></div>
+        <div><b>No API</b><span>The interface, the logic and the database lived in one process, so nothing else could talk to Mandalink.</span></div>
+      </div>
+    </section>
+
+    <section id="inside">
+      <span class="kick">Inside version 2</span>
+      <h2>How the pieces fit</h2>
+      <p class="lede">The browser only ever talks to the API. The API owns the data and the outside services.</p>
+      <div class="arch">
+        <svg class="archd" viewBox="0 0 900 330" role="img" aria-label="The browser runs the React app, which calls the Spring Boot API over HTTPS. The API reads and writes PostgreSQL and calls Groq for AI help and Resend for password emails. The announcement board is also embedded on rayanupadhyay.com.">
+          <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs>
+          <rect class="box red" x="20" y="40" width="240" height="120" rx="14"/>
+          <text x="40" y="74" font-size="17" font-weight="700">Browser</text>
+          <text class="sub" x="40" y="98">React 18 · Vite · React Router</text>
+          <text class="sub" x="40" y="118">Hanzi Writer for stroke order</text>
+          <text class="sub" x="40" y="138">Mandarin audio via speech synthesis</text>
+          <rect class="box acc" x="340" y="40" width="240" height="120" rx="14"/>
+          <text x="360" y="74" font-size="17" font-weight="700">REST API</text>
+          <text class="sub" x="360" y="98">Java 17 · Spring Boot 3.3</text>
+          <text class="sub" x="360" y="118">JWT sign-in · email or Google</text>
+          <text class="sub" x="360" y="138">XP · badges · moderation</text>
+          <rect class="box gold" x="660" y="20" width="220" height="64" rx="12"/>
+          <text x="680" y="48" font-size="15" font-weight="700">PostgreSQL</text>
+          <text class="sub" x="680" y="68">users, progress, radicals</text>
+          <rect class="box" x="660" y="100" width="220" height="56" rx="12"/>
+          <text x="680" y="124" font-size="15" font-weight="700">Groq</text>
+          <text class="sub" x="680" y="142">the AI radical tutor</text>
+          <rect class="box" x="660" y="172" width="220" height="56" rx="12"/>
+          <text x="680" y="196" font-size="15" font-weight="700">Resend</text>
+          <text class="sub" x="680" y="214">password-reset emails</text>
+          <rect class="box" x="340" y="230" width="240" height="72" rx="14"/>
+          <text x="360" y="260" font-size="15" font-weight="700">rayanupadhyay.com</text>
+          <text class="sub" x="360" y="282">shows the announcement board</text>
+          <path class="ln" d="M260 100H336"/>
+          <text class="sub" x="270" y="92">HTTPS</text>
+          <path class="ln" d="M580 80C620 80 620 52 656 52"/>
+          <path class="ln" d="M580 110H656"/>
+          <path class="ln" d="M580 130C620 130 620 200 656 200"/>
+          <path class="ln" d="M460 160V226"/>
+          <text class="sub" x="470" y="200">announcements</text>
+        </svg>
+        <svg class="archm" viewBox="0 0 340 560" role="img" aria-label="The browser runs the React app, which calls the Spring Boot API. The API uses PostgreSQL, Groq and Resend, and its announcement board shows on rayanupadhyay.com.">
+          <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--low)"/></marker></defs>
+          <rect class="box red" x="10" y="10" width="320" height="96" rx="14"/>
+          <text x="28" y="42" font-size="17" font-weight="700">Browser</text>
+          <text class="sub" x="28" y="66">React 18 · Vite · React Router</text>
+          <text class="sub" x="28" y="86">Hanzi Writer · speech synthesis</text>
+          <path d="M170 106V146" style="stroke:var(--low);stroke-width:1.5;marker-end:url(#arr2)"/>
+          <rect class="box acc" x="10" y="150" width="320" height="96" rx="14"/>
+          <text x="28" y="182" font-size="17" font-weight="700">REST API</text>
+          <text class="sub" x="28" y="206">Java 17 · Spring Boot 3.3</text>
+          <text class="sub" x="28" y="226">JWT sign-in · XP · badges</text>
+          <path d="M170 246V286" style="stroke:var(--low);stroke-width:1.5;marker-end:url(#arr2)"/>
+          <rect class="box gold" x="10" y="290" width="320" height="52" rx="12"/>
+          <text x="28" y="322" font-size="15" font-weight="700">PostgreSQL <tspan class="sub" font-weight="400">· users, progress</tspan></text>
+          <rect class="box" x="10" y="352" width="320" height="52" rx="12"/>
+          <text x="28" y="384" font-size="15" font-weight="700">Groq <tspan class="sub" font-weight="400">· the AI tutor</tspan></text>
+          <rect class="box" x="10" y="414" width="320" height="52" rx="12"/>
+          <text x="28" y="446" font-size="15" font-weight="700">Resend <tspan class="sub" font-weight="400">· reset emails</tspan></text>
+          <rect class="box" x="10" y="486" width="320" height="64" rx="12"/>
+          <text x="28" y="514" font-size="15" font-weight="700">rayanupadhyay.com</text>
+          <text class="sub" x="28" y="536">shows the announcement board</text>
+        </svg>
+      </div>
+    </section>
+
+    <section id="timeline">
+      <span class="kick">Timeline</span>
+      <h2>From the commit history</h2>
+      <p class="lede">Dates are when work landed in the two GitHub repositories.</p>
+      <ol class="tl">
+        <li><time>Jan 2026</time><div><b>Version 1 goes on GitHub</b><span>The first Python and Streamlit version is uploaded to MyChineseApp, my first repository.</span></div></li>
+        <li><time>Apr 2026</time><div><b>Online on Render</b><span>A start script so Streamlit runs on Render.</span></div></li>
+        <li><time>Jul 2026</time><div><b>Version 1’s busiest month</b><span>46 commits: the app at its biggest, and at the limits of Streamlit.</span></div></li>
+        <li class="v2d"><time>5 Aug 2026</time><div><b>The rebuild starts</b><span>Mandalink2’s first commit: a React front end, a Spring Boot API and a Dockerfile for Render.</span></div></li>
+        <li class="v2d"><time>7–9 Aug 2026</time><div><b>A community</b><span>Badge drops, analytics, a Staff badge, clickable profiles, bio and username moderation, photo uploads approved by an admin, and the achievement system.</span></div></li>
+        <li class="v2d"><time>7 Oct 2026</time><div><b>Quests</b><span>Quest badges and a Hall of Fame.</span></div></li>
+        <li class="v2d"><time>20 Oct 2026</time><div><b>Announcements</b><span>An announcement board with admin posting, and an embed for rayanupadhyay.com.</span></div></li>
+        <li class="v2d"><time>27–28 Oct 2026</time><div><b>IB Chinese</b><span>The IB course section with Unit 1, a new seal logo, and General, IB and IGCSE study tracks saved to accounts.</span></div></li>
+      </ol>
+      <p class="note">Version 1: 80 commits in MyChineseApp. Version 2: 53 commits in Mandalink2 so far.</p>
+    </section>
+
+    <div class="end">
+      <div><h2>Try it yourself</h2><p>Free, in your browser, at mandalink.org.</p></div>
+      <div class="ctas"><a class="btn pri" href="https://mandalink.org" target="_blank" rel="noopener">Open Mandalink ↗</a><a class="btn" href="https://rayanupadhyay.com" target="_blank" rel="noopener">rayanupadhyay.com</a></div>
+    </div>
+  </div>
+</main>
+
+<footer><div class="wrap">
+  <span>Built by <a href="https://rayanupadhyay.com">Rayan Upadhyay</a>. Radicals, features and dates are from the app and its two repositories.</span>
+  <span><a href="https://github.com/RayanUpadhyay/Mandalink2">Mandalink2</a> · <a href="https://github.com/RayanUpadhyay/MyChineseApp">MyChineseApp (v1)</a></span>
+</div></footer>
+
+<script>
+(function(){
+  // twelve radicals, as listed in Mandalink's radicals.csv (number, radical, pinyin, meaning)
+  var R = [[9,'人','rén','Person'],[30,'口','kǒu','Mouth'],[38,'女','nǚ','Woman'],[40,'宀','mián','Roof'],[46,'山','shān','Mountain'],[61,'心','xīn','Heart / mind'],[64,'手','shǒu','Hand'],[72,'日','rì','Sun / day'],[75,'木','mù','Wood / tree'],[85,'水','shuǐ','Water'],[86,'火','huǒ','Fire'],[149,'言','yán','Speech / words']];
+  var box = document.getElementById('rads');
+  R.forEach(function(r){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'rad';
+    b.setAttribute('aria-label', r[1] + ', radical ' + r[0] + ': ' + r[2] + ', ' + r[3]);
+    b.innerHTML = '<span class="in"><span class="f"><span lang="zh">' + r[1] + '</span></span><span class="b"><span><b>' + r[2] + '</b><i>' + r[3] + '</i><i>No. ' + r[0] + '</i></span></span></span>';
+    b.addEventListener('click', function(){ b.classList.toggle('on'); });
+    box.appendChild(b);
+  });
+})();
+</script>
+</body>
+</html>
