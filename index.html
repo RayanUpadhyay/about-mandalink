@@ -110,6 +110,28 @@ a:focus-visible,.btn:focus-visible,button:focus-visible{outline:3px solid var(--
 .why b{display:block;font-weight:600;margin-bottom:2px}
 .why span{font-size:14.5px;color:var(--mid)}
 
+
+/* then and now: drag to compare */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:24px 0 14px}
+.tabs button{font:600 14px var(--sans);padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--mid);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cmp{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--paper);aspect-ratio:16/10;user-select:none;-webkit-user-select:none;touch-action:pan-y}
+.cmp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top left;display:block;pointer-events:none}
+.cmp .old{clip-path:inset(0 calc(100% - var(--pos,50%)) 0 0)}
+.cmp .bar{position:absolute;top:0;bottom:0;left:var(--pos,50%);width:3px;margin-left:-1.5px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.15),0 0 18px rgba(0,0,0,.25);pointer-events:none}
+.cmp .knob{position:absolute;top:50%;left:var(--pos,50%);width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:#fff;color:#242424;display:grid;place-items:center;font:700 16px var(--sans);box-shadow:0 4px 16px rgba(0,0,0,.25);pointer-events:none}
+.cmp .lab{position:absolute;top:12px;padding:5px 10px;border-radius:8px;font:700 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;pointer-events:none}
+.cmp .l1{left:12px;background:var(--gold);color:#fff}.cmp .l2{right:12px;background:var(--teal);color:#fff}
+.cmp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.cmp input:focus-visible~.knob{outline:3px solid var(--gold);outline-offset:3px}
+.cap2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;font-size:14.5px;color:var(--mid)}
+.cap2 b{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.cap2 .c1 b{color:var(--gold)}.cap2 .c2 b{color:var(--teal)}
+.newonly{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+.newonly figure{margin:0;background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.newonly img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top left}
+.newonly figcaption{padding:10px 12px;font-size:14px;color:var(--mid)}.newonly figcaption b{color:var(--ink)}
+@media (max-width:640px){.cap2{grid-template-columns:1fr;gap:8px}.newonly{grid-template-columns:1fr}.cmp .knob{width:38px;height:38px;margin:-19px 0 0 -19px}}
 /* architecture */
 .arch{margin-top:24px;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:18px;overflow:hidden}
 .arch svg{display:block;width:100%;height:auto}
@@ -165,7 +187,7 @@ footer a{color:var(--mid)}
 
 <header class="top"><div class="wrap">
   <a class="brand" href="#top"><img src="logo.png" alt="" width="30" height="32">Mandalink</a>
-  <nav class="nav" aria-label="Sections"><a href="#idea">The idea</a><a href="#now">What it does</a><a href="#twice">Built twice</a><a href="#inside">Inside</a><a href="#timeline">Timeline</a></nav>
+  <nav class="nav" aria-label="Sections"><a href="#idea">The idea</a><a href="#now">What it does</a><a href="#twice">Built twice</a><a href="#then">Then and now</a><a href="#inside">Inside</a><a href="#timeline">Timeline</a></nav>
   <a class="btn pri" href="https://mandalink.org" target="_blank" rel="noopener">Open the site ↗</a>
 </div></header>
 
@@ -250,6 +272,28 @@ footer a{color:var(--mid)}
         <div><b>Fighting the framework for design</b><span>The look came from big blocks of injected CSS and raw HTML, with images embedded as base64.</span></div>
         <div><b>No API</b><span>The interface, the logic and the database lived in one process, so nothing else could talk to Mandalink.</span></div>
       </div>
+    </section>
+
+    <section id="then">
+      <span class="kick">Then and now</span>
+      <h2>Same idea, rebuilt</h2>
+      <p class="lede">Both versions, running from their own code, on the same screens. Drag the handle (or use the arrow keys) to compare.</p>
+      <div class="tabs" role="group" aria-label="Screen to compare" id="cmpTabs"></div>
+      <div class="cmp" id="cmp" style="--pos:50%">
+        <img class="new" alt="" id="cmpNew">
+        <img class="old" alt="" id="cmpOld">
+        <span class="lab l1">Version 1 · Streamlit</span><span class="lab l2">Version 2 · React</span>
+        <input type="range" min="0" max="100" value="50" aria-label="Drag to compare version 1 (left) with version 2 (right)" id="cmpRange">
+        <span class="bar"></span><span class="knob" aria-hidden="true">⇆</span>
+      </div>
+      <div class="cap2"><div class="c1"><b>Version 1</b><span id="cmpT1"></span></div><div class="c2"><b>Version 2</b><span id="cmpT2"></span></div></div>
+      <h3 style="font:700 22px/1.2 var(--serif);margin:36px 0 0">Only in version 2</h3>
+      <div class="newonly">
+        <figure><img src="img/new-ib.jpg" alt="The IB Chinese B course page, with Theme 1 Identities and Unit 1, 生活方式 Lifestyle" loading="lazy"><figcaption><b>IB Chinese B course.</b> Themes and units, with Unit 1 built.</figcaption></figure>
+        <figure><img src="img/new-sheet.jpg" alt="The practice worksheet builder" loading="lazy"><figcaption><b>Practice worksheets.</b> Pick characters, then print a tracing sheet.</figcaption></figure>
+        <figure><img src="img/new-profile.jpg" alt="A profile page with rank, XP, level and a featured badge" loading="lazy"><figcaption><b>Profiles.</b> Rank, XP, level and a featured badge.</figcaption></figure>
+      </div>
+      <p class="note">Screenshots taken by running each version’s code locally with a test account, so the leaderboards and scores are empty.</p>
     </section>
 
     <section id="inside">
@@ -346,6 +390,29 @@ footer a{color:var(--mid)}
 <script>
 (function(){
   // twelve radicals, as listed in Mandalink's radicals.csv (number, radical, pinyin, meaning)
+
+  // then and now: one viewer, a tab per screen
+  var CMP = [
+    ['home', 'Home', 'A single page with the logo, a welcome card and a list of features.', 'A top navigation bar on every page, with each part of the app at its own address.'],
+    ['radicals', 'Radicals', 'One long list of radicals, each with a Listen button.', 'A searchable grid of cards with a difficulty filter.'],
+    ['flashcards', 'Flashcards', 'One big card with a Show Meaning checkbox and a Next button.', 'A deck you can search and filter, flipped by tapping, with the neighbouring cards in view.'],
+    ['quiz', 'Quiz', 'A radical in a blue panel, with the choices as small buttons in a column.', 'The radical large and centred, with the choices in a grid.'],
+    ['timed', 'Timed mode', 'A start screen for the 60-second challenge.', 'A countdown ring and a running score, straight into the questions.'],
+    ['stroke', 'Stroke order', 'A row of radicals, each with its own stroke-order box.', 'Every radical in a picker grid, with one large animated stroke guide.'],
+    ['leaderboard', 'Leaderboard', 'A plain table of usernames, levels and XP.', 'Ranked rows with avatars, linked to each learner’s profile.'],
+    ['ai', 'AI help', 'A text box and an Ask button.', 'A chat thread with a greeting and a Send button.']
+  ];
+  var tabs = document.getElementById('cmpTabs'), cmp = document.getElementById('cmp'), rng = document.getElementById('cmpRange');
+  var o = document.getElementById('cmpOld'), n = document.getElementById('cmpNew'), t1 = document.getElementById('cmpT1'), t2 = document.getElementById('cmpT2');
+  function pick(i){
+    var c = CMP[i]; o.src = 'img/' + c[0] + '-v1.jpg'; n.src = 'img/' + c[0] + '-v2.jpg';
+    o.alt = 'Version 1: ' + c[1] + '. ' + c[2]; n.alt = 'Version 2: ' + c[1] + '. ' + c[3]; t1.textContent = c[2]; t2.textContent = c[3];
+    [].forEach.call(tabs.children, function(b, j){ b.setAttribute('aria-pressed', String(j === i)); });
+  }
+  CMP.forEach(function(c, i){ var b = document.createElement('button'); b.type = 'button'; b.textContent = c[1]; b.addEventListener('click', function(){ pick(i); }); tabs.appendChild(b); });
+  rng.addEventListener('input', function(){ cmp.style.setProperty('--pos', rng.value + '%'); });
+  pick(0);
+  CMP.forEach(function(c){ new Image().src = 'img/' + c[0] + '-v1.jpg'; new Image().src = 'img/' + c[0] + '-v2.jpg'; });
   var R = [[9,'人','rén','Person'],[30,'口','kǒu','Mouth'],[38,'女','nǚ','Woman'],[40,'宀','mián','Roof'],[46,'山','shān','Mountain'],[61,'心','xīn','Heart / mind'],[64,'手','shǒu','Hand'],[72,'日','rì','Sun / day'],[75,'木','mù','Wood / tree'],[85,'水','shuǐ','Water'],[86,'火','huǒ','Fire'],[149,'言','yán','Speech / words']];
   var box = document.getElementById('rads');
   R.forEach(function(r){
